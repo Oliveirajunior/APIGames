@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página de Usuários</title>
+  </head>
+  <body>
+    <hr />
+    <h4>Lista de Usuários</h4>
+    <ul id="users"></ul>
+    <hr />
+    <h4>Novo Usuário</h4>
+    <input type="text" name="name" id="name" placeholder="Nome" /> <br />
+    <br />
+    <input type="text" name="email" id="email" placeholder="exemplo@mail.com" />
+    <br />
+    <br />
+    <input type="password" name="password" id="password" placeholder="Senha" />
+    <br />
+    <br />
+    <button type="button" onclick="createUser()">Criar</button>
+    <hr />
+    <h4>Editar Usuário</h4>
+    <input type="text" name="idEdit" id="idEdit" placeholder="Id" readonly />
+    <br />
+    <br />
+    <input type="text" name="nameEdit" id="nameEdit" placeholder="Nome" />
+    <br /><br />
+    <input
+      type="text"
+      name="emailEdit"
+      id="emailEdit"
+      placeholder="exemplo@mail.com"
+    />
+    <br /><br />
+    <input
+      type="password"
+      name="passwordEdit"
+      id="passwordEdit"
+      placeholder="Senha"
+    />
+    <br /><br />
+    <button type="button" onclick="updateUser()">Editar</button>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    function deleteUser(listItem) {
+      var id = listItem.getAttribute('data-id')
+      axios
+        .delete(`http://localhost:8080/user/${id}`)
+        .then(response => {
+          alert('Usuário deletado!')
+          window.location.reload(true)
+        })
+        .catch(err => console.log(err))
+    }
+
+    function loadForm(listItem) {
+      var id = listItem.getAttribute('data-id')
+      var name = listItem.getAttribute('data-name')
+      var email = listItem.getAttribute('data-email')
+      var password = listItem.getAttribute('data-password')
+      document.getElementById('idEdit').value = id
+      document.getElementById('nameEdit').value = name
+      document.getElementById('emailEdit').value = email
+      document.getElementById('passwordEdit').value = password
+    }
+
+    function updateUser() {
+      var idInput = document.getElementById('idEdit')
+      var nameInput = document.getElementById('nameEdit')
+      var emailInput = document.getElementById('emailEdit')
+      var passwordInput = document.getElementById('passwordEdit')
+
+      var user = {
+        name: nameInput.value,
+        email: emailInput.value,
+        password: passwordInput.value
+      }
+      var id = idInput.value
+      axios
+        .put(`http://localhost:8080/user/${id}`, user)
+        .then(response => {
+          if (response.status == 200) alert('Usuário Editado!')
+          window.location.reload(true)
+        })
+        .catch(err => alert('Erro de cadastramento!'))
+    }
+
+    axios
+      .get('http://localhost:8080/users')
+      .then(response => {
+        var users = response.data
+        var lista = document.getElementById('users')
+        users.forEach(element => {
+          var item = document.createElement('li')
+          item.setAttribute('data-id', element.id)
+          item.setAttribute('data-name', element.name)
+          item.setAttribute('data-email', element.email)
+          item.setAttribute('data-password', element.password)
+
+          item.innerHTML = `${element.id} || ${element.name} || ${element.email} || ${element.password} `
+
+          var deleteBtn = document.createElement('button')
+          deleteBtn.innerHTML = 'Deletar'
+          deleteBtn.addEventListener('click', function () {
+            deleteUser(item)
+          })
+
+          var editBtn = document.createElement('button')
+          editBtn.innerHTML = 'Editar'
+          editBtn.addEventListener('click', function () {
+            loadForm(item)
+          })
+
+          item.appendChild(deleteBtn)
+          item.appendChild(editBtn)
+          lista.appendChild(item)
+        })
+      })
+      .catch(err => console.log(err))
+
+    function createUser() {
+      var nameInput = document.getElementById('name')
+      var emailInput = document.getElementById('email')
+      var passwordInput = document.getElementById('password')
+
+      var user = {
+        name: nameInput.value,
+        email: emailInput.value,
+        password: passwordInput.value
+      }
+      axios
+        .post('http://localhost:8080/user', user)
+        .then(response => {
+          if (response.status == 200) alert('Usuário cadastrado!')
+          window.location.reload(true)
+        })
+        .catch(err => alert('Erro de cadastramento!'))
+    }
+  </script>
+</html>
